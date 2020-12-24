@@ -1,0 +1,35 @@
+{
+    "parserOptions": {
+        "plugins": ["react"]
+    },
+    "env": {
+        "browser": true,
+        "node": false
+    },
+    "extends": [
+        "plugin:react/recommended"
+    ],
+    "globals": {
+        "process": "readonly"
+    },
+    "rules": {
+        "react/button-has-type": "error",
+        "react/no-access-state-in-setstate": "warn",
+        "react/no-danger": "error",
+        "react/no-deprecated": "error",
+        "react/no-direct-mutation-state": "error",
+        "react/no-this-in-sfc": "error",
+        "react/no-unescaped-entities": "error",
+        "react/no-unsafe": "error",
+        "react/no-unused-prop-types": "error",
+        "react/no-unused-state": "error",
+        "react/prefer-read-only-props": "error",
+        "react/prefer-stateless-function": "error",
+        "react/prop-types": "error",
+        "react/react-in-jsx-scope": "error",
+        "react/void-dom-elements-no-children": "error",
+        "react/jsx-no-duplicate-props": "error",
+        "react/jsx-no-target-blank": "error",
+        "react/jsx-no-undef": "error"
+    }
+}
