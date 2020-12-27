@@ -40,6 +40,7 @@ const viewConfig = {
         new copyPlugin({
             patterns: [
                 {from: 'src/www/index.html', to: 'index.html'},
+                {from: 'src/www/style.css', to: 'style.css'},
             ],
         }),
     ],

@@ -1,0 +1,75 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    color: #000;
+    font-size: 24px;
+    font-family: sans-serif;
+}
+
+input, button, select {
+    border: 1px solid #ccc;
+    font-size: 1em;
+    padding: 0.25em 0.5em;
+}
+
+input[type="checkbox"] {
+    height: 1.25em;
+    width: 1.25em;
+}
+
+.page {
+    background-color: #fff;
+    max-width: 1000px;
+    margin: auto;
+    padding: 0.5em;
+}
+
+.formElement {
+    margin: 1em 0;
+}
+
+.label {
+    display: block;
+    color: #888;
+}
+
+.button {
+    padding: 0.25em 1.5em;
+    cursor: pointer;
+}
+
+.button.primary {
+    background-color: #336fc9;
+    color: #fff;
+    transition: background-color 0.2s;
+}
+
+.button.primary:hover {
+    background-color: #5286d3;
+}
+
+.button.primary:active {
+    background-color: #2256a5;
+}
+
+.buttonedInput {
+    display: flex;
+    flex-direction: row;
+}
+
+.buttonedInput .input {
+    flex-grow: 1;
+    border-radius: 3px 0 0 3px;
+    border: 1px solid #ccc;
+    border-right: none;
+    font-size: 1em;
+    padding: 0.25em 0.5em;
+}
+
+.buttonedInput .button {
+    border-radius: 0 3px 3px 0;
+    border-left: none;
+    font-size: 1em;
+    padding: 0.25em 0.5em;
+}

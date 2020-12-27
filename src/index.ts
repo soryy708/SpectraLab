@@ -1,4 +1,4 @@
-import electron, { BrowserWindow } from 'electron';
+import electron, { BrowserWindow, ipcMain } from 'electron';
 
 let window: BrowserWindow = null;
 
@@ -20,6 +20,10 @@ function createWindow() {
         window = null;
     });
 }
+
+ipcMain.handle('showOpenDialog', (event, args) => {
+    return electron.dialog.showOpenDialog(window, args);
+});
 
 electron.app.on('ready', createWindow);
 
