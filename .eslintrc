@@ -96,7 +96,6 @@
         "import/no-amd": "error",
         "import/first": "error",
         "import/no-duplicates": "error",
-        "import/no-namespace": "error",
         "import/extensions": ["error", {"commonjs": true}],
         "import/newline-after-import": "error",
         "import/prefer-default-export": "error",
