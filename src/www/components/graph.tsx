@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Matrix from '../../matrix';
 
 type Props = {
@@ -69,7 +70,14 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         camera.position.z = 2;
 
-        renderer.render(scene, camera);
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
     }, [renderer, props.data]);
 
     return <canvas
