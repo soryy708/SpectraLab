@@ -6,6 +6,7 @@ type Props = {
     width?: string;
     height?: string;
     data: Matrix;
+    style?: any;
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
@@ -75,6 +76,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         ref={canvasRef}
         width={props.width}
         height={props.height}
+        style={props.style}
     ></canvas>;
 };
 
