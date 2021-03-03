@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Matrix from '../../matrix';
 
 type Props = {
     width?: string;
     height?: string;
     data: Matrix;
+    style?: any;
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
@@ -48,7 +50,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 console.error('Weird geometry');
                 return;
             }
-            for (const i = 0; i < neighborIndexes.length - 1; ++i) {
+            for (let i = 0; i < neighborIndexes.length - 1; ++i) {
                 vertices.push(...[
                     ...makeVertex(x, y),
                     ...makeVertex(...neighborIndexes[i]),
@@ -68,13 +70,21 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         camera.position.z = 2;
 
-        renderer.render(scene, camera);
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
     }, [renderer, props.data]);
 
     return <canvas
         ref={canvasRef}
         width={props.width}
         height={props.height}
+        style={props.style}
     ></canvas>;
 };
 
