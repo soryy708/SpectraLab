@@ -48,7 +48,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 console.error('Weird geometry');
                 return;
             }
-            for (const i = 0; i < neighborIndexes.length - 1; ++i) {
+            for (let i = 0; i < neighborIndexes.length - 1; ++i) {
                 vertices.push(...[
                     ...makeVertex(x, y),
                     ...makeVertex(...neighborIndexes[i]),
