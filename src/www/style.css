@@ -113,3 +113,24 @@ input[type="checkbox"] {
     margin-left: 0;
 }
 
+.graphPage {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    height: 100vh;
+}
+
+.graphPage .leftPart {
+    padding-right: 0.5em;
+}
+
+.graphPage .rightPart {
+    flex-grow: 1;
+    background-color: #000;
+}
+
+.graphPage .rightPart canvas {
+    width: 100%;
+    height: 100%;
+}
