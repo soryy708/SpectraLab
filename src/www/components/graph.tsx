@@ -36,8 +36,8 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         scene.add(new THREE.HemisphereLight(0xffffff, 0x0a0a0a, 1));
 
         const geometry = new THREE.BufferGeometry();
-        const vertices = [];
-        const makeVertex = (x, y) => {
+        const vertices: number[] = [];
+        const makeVertex = (x: number, y: number) => {
             return [
                 x / props.data.getWidth()  - 0.5,
                 props.data.getAt(x, y),
