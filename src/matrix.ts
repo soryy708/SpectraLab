@@ -1,9 +1,9 @@
 class Matrix {
     private sizeX = NaN;
     private sizeY = NaN;
-    private data = null;
+    private data: Array<Array<number>> = null;
 
-    constructor(data: []) {
+    constructor(data: Array<Array<number>>) {
         const sizeMin = data.reduce((min, cur) => cur.length < min ? cur.length : min, +Infinity);
         const sizeMax = data.reduce((max, cur) => cur.length > max ? cur.length : max, -Infinity);
         if (sizeMin !== sizeMax) {
@@ -39,7 +39,7 @@ class Matrix {
         });
     }
 
-    neighborIndexesOf(x: number, y: number): [[number, number]] {
+    neighborIndexesOf(x: number, y: number): [number, number][] {
         if (x < 0 || x >= this.sizeX || y < 0 || y >= this.sizeY) {
             throw new Error('Out of range');
         }
