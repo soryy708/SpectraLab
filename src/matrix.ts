@@ -7,7 +7,7 @@ class Matrix {
         const sizeMin = data.reduce((min, cur) => cur.length < min ? cur.length : min, +Infinity);
         const sizeMax = data.reduce((max, cur) => cur.length > max ? cur.length : max, -Infinity);
         if (sizeMin !== sizeMax) {
-            return new Error('Non-rectangular');
+            throw (new Error('Non-rectangular'));
         }
 
         this.data = data;
