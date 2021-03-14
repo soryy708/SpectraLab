@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Matrix from '../../matrix';
@@ -13,6 +13,7 @@ type Props = {
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
     const canvasRef = useRef(null);
     const [renderer, setRenderer] = useState(null);
+    const [camera, setCamera] = useState(null);
 
     useEffect(() => {
         if (!canvasRef || !canvasRef.current) {
@@ -67,18 +68,42 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         scene.add(mesh);
 
         const { width, height } = canvas.getBoundingClientRect();
-        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-        camera.position.z = 2;
+        const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        setCamera(newCamera);
+        newCamera.position.z = 2;
 
-        const controls = new OrbitControls(camera, renderer.domElement);
+        const controls = new OrbitControls(newCamera, renderer.domElement);
 
         const animate = () => {
             requestAnimationFrame(animate);
             controls.update();
-            renderer.render(scene, camera);
+            renderer.render(scene, newCamera);
         };
         animate();
     }, [renderer, props.data]);
+
+    const onResize = (callback: () => void, params: any[]) => {
+        useLayoutEffect(() => {
+            window.addEventListener('resize', callback);
+            return () => {
+                window.removeEventListener('resize', callback);
+            };
+        }, [...params]);
+    };
+
+    onResize(() => {
+        const canvas = canvasRef && canvasRef.current;
+        if (!camera || !canvas) {
+            return;
+        }
+
+        const { width, height } = canvas.getBoundingClientRect();
+        const newAspect = width / height;
+        if (newAspect !== camera.aspect) {
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+    }, [canvasRef, camera]);
 
     return <canvas
         ref={canvasRef}
