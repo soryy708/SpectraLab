@@ -72,6 +72,9 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         setCamera(newCamera);
         newCamera.position.z = 2;
 
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(width, height, false);
+
         const controls = new OrbitControls(newCamera, renderer.domElement);
 
         const animate = () => {
@@ -98,6 +101,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         }
 
         const { width, height } = canvas.getBoundingClientRect();
+        renderer.setSize(width, height, false);
         const newAspect = width / height;
         if (newAspect !== camera.aspect) {
             camera.aspect = width / height;
