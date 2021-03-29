@@ -65,7 +65,10 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
         material.side = THREE.DoubleSide;
         const mesh = new THREE.Mesh(geometry, material);
+        const wireframe = new THREE.WireframeGeometry(geometry);
+        const wireframeLines = new THREE.LineSegments(wireframe);
         scene.add(mesh);
+        scene.add(wireframeLines);
 
         const { width, height } = canvas.getBoundingClientRect();
         const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
