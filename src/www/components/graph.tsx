@@ -46,16 +46,16 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             ];
         };
         props.data.forEach((val, [x, y]) => {
-            const neighborIndexes = props.data.neighborIndexesOf(x, y);
-            if (neighborIndexes.length < 2 || neighborIndexes.length > 8) {
+            const neighborIndexes = props.data.cardinalNeighborIndexesOf(x, y);
+            if (neighborIndexes.length < 2 || neighborIndexes.length > 4) {
                 console.error('Weird geometry');
                 return;
             }
-            for (let i = 0; i < neighborIndexes.length - 1; ++i) {
+            for (let i = 0; i < neighborIndexes.length; ++i) {
                 vertices.push(...[
                     ...makeVertex(x, y),
                     ...makeVertex(...neighborIndexes[i]),
-                    ...makeVertex(...neighborIndexes[i+1]),
+                    ...makeVertex(...neighborIndexes[(i+1) % neighborIndexes.length]),
                 ]);
             }
         });

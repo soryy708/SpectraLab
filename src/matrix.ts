@@ -71,6 +71,27 @@ class Matrix {
         }
         return offsets.map(([offX, offY]) => [x + offX, y + offY]);
     }
+
+    cardinalNeighborIndexesOf(x: number, y: number): [number, number][] {
+        if (x < 0 || x >= this.sizeX || y < 0 || y >= this.sizeY) {
+            throw new Error('Out of range');
+        }
+
+        const offsets = [];
+        if (x > 0) {
+            offsets.push([-1, 0]);
+        }
+        if (y > 0) {
+            offsets.push([0, -1]);
+        }
+        if (x + 1 < this.sizeX) {
+            offsets.push([1, 0]);
+        }
+        if (y + 1 < this.sizeY) {
+            offsets.push([0, 1]);
+        }
+        return offsets.map(([offX, offY]) => [x + offX, y + offY]);
+    }
 }
 
 export default Matrix;
