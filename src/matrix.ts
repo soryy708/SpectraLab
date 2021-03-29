@@ -39,6 +39,10 @@ class Matrix {
         });
     }
 
+    toArray(): number[] {
+        return [...this.data.reduce((prev, cur) => [...prev, ...cur], [])];
+    }
+
     neighborIndexesOf(x: number, y: number): [number, number][] {
         if (x < 0 || x >= this.sizeX || y < 0 || y >= this.sizeY) {
             throw new Error('Out of range');

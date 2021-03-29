@@ -8,6 +8,7 @@ type Props = {
     height?: string;
     data: Matrix;
     style?: any;
+    showGlobalExtremum?: boolean;
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
@@ -70,6 +71,35 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         scene.add(mesh);
         scene.add(wireframeLines);
 
+        if (props.showGlobalExtremum) {
+            const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
+            const cubeMaxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
+            const cubeMinMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+            const maxVal = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
+            const minVal = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
+            const cubes: THREE.Mesh[] = [];
+            const makeCubeMesh = (x: number, y: number, mat: THREE.Material) => {
+                const cubeMesh = new THREE.Mesh(cubeGeometry, mat);
+                const vertex = makeVertex(x, y);
+                cubeMesh.position.x = vertex[0];
+                cubeMesh.position.y = vertex[1];
+                cubeMesh.position.z = vertex[2];
+                cubeMesh.rotateY(Math.PI / 4);
+                cubeMesh.rotateX(Math.PI / 4);
+                return cubeMesh;
+            };
+            props.data.forEach((val, [x, y]) => {
+                if (val === maxVal) {
+                    cubes.push(makeCubeMesh(x, y, cubeMaxMaterial));
+                } else if (val === minVal) {
+                    cubes.push(makeCubeMesh(x, y, cubeMinMaterial));
+                }
+            });
+            cubes.forEach(cube => {
+                scene.add(cube);
+            });
+        }
+
         const { width, height } = canvas.getBoundingClientRect();
         const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
         setCamera(newCamera);
@@ -86,7 +116,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             renderer.render(scene, newCamera);
         };
         animate();
-    }, [renderer, props.data]);
+    }, [renderer, props.data, props.showGlobalExtremum]);
 
     const onResize = (callback: () => void, params: any[]) => {
         useLayoutEffect(() => {
