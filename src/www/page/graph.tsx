@@ -27,6 +27,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
         <div className="rightPart">
             <Graph
                 data={props.data}
+                showLocalExtremum={showLocalExtremum}
                 showGlobalExtremum={showGlobalExtremum}
             />
         </div>

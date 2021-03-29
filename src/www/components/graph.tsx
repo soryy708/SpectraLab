@@ -8,6 +8,7 @@ type Props = {
     height?: string;
     data: Matrix;
     style?: any;
+    showLocalExtremum?: boolean;
     showGlobalExtremum?: boolean;
 };
 
@@ -71,10 +72,11 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         scene.add(mesh);
         scene.add(wireframeLines);
 
-        if (props.showGlobalExtremum) {
+        if (props.showLocalExtremum || props.showGlobalExtremum) {
             const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
-            const cubeMaxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-            const cubeMinMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+            const cubeExtremumMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
+            const cubeMaxMaterial      = new THREE.MeshBasicMaterial({color: 0x00ff00});
+            const cubeMinMaterial      = new THREE.MeshBasicMaterial({color: 0xff0000});
             const maxVal = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
             const minVal = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
             const cubes: THREE.Mesh[] = [];
@@ -89,10 +91,24 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 return cubeMesh;
             };
             props.data.forEach((val, [x, y]) => {
-                if (val === maxVal) {
-                    cubes.push(makeCubeMesh(x, y, cubeMaxMaterial));
-                } else if (val === minVal) {
-                    cubes.push(makeCubeMesh(x, y, cubeMinMaterial));
+                if (props.showGlobalExtremum) {
+                    if (val === maxVal) {
+                        cubes.push(makeCubeMesh(x, y, cubeMaxMaterial));
+                        return;
+                    }
+                    if (val === minVal) {
+                        cubes.push(makeCubeMesh(x, y, cubeMinMaterial));
+                        return;
+                    }
+                }
+                if (props.showLocalExtremum) {
+                    const neighborIndexes = props.data.cardinalNeighborIndexesOf(x, y);
+                    const neighborVals = neighborIndexes.map(([nx, ny]) => props.data.getAt(nx, ny));
+                    const maxNeighborVal = neighborVals.reduce((max, cur) => cur > max ? cur : max, -Infinity);
+                    const minNeighborVal = neighborVals.reduce((min, cur) => cur < min ? cur : min,  Infinity);
+                    if (val >= maxNeighborVal || val <= minNeighborVal) {
+                        cubes.push(makeCubeMesh(x, y, cubeExtremumMaterial));
+                    }
                 }
             });
             cubes.forEach(cube => {
@@ -116,7 +132,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             renderer.render(scene, newCamera);
         };
         animate();
-    }, [renderer, props.data, props.showGlobalExtremum]);
+    }, [renderer, props.data, props.showLocalExtremum, props.showGlobalExtremum]);
 
     const onResize = (callback: () => void, params: any[]) => {
         useLayoutEffect(() => {
