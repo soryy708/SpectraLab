@@ -34,6 +34,7 @@ const LoadPage: React.FunctionComponent = () => {
         }));
     }
 
+    // Set wave lengths in the matrix
     const initWaveLengthColumnInMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
         let matrix: Number[][] = [];
         for (const measure of measuresObjects[0].vector) {
@@ -52,19 +53,32 @@ const LoadPage: React.FunctionComponent = () => {
     }
 
     const buildMatrixWithNormalize = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: Number[][]) => {
+        const baseVector = findBaseVector(measuresObjects);
         for (const measure of measuresObjects) {
-            for (let i = 0; i < measure.vector.length; i++) {
-                matrix[i].push(Number(measure.vector[i].waveIntensity));
+            if (!measure.file.endsWith(baseMeasurement)) {
+                // Substruct the base vector and push to the matrix
+                for (let i = 0; i < measure.vector.length; i++) {
+                    const substructedIntensity = Number(measure.vector[i].waveIntensity) - Number(baseVector[i].waveIntensity);
+                    matrix[i].push(substructedIntensity);
+                }
             }
         }
     }
 
+    // Find the reference/base vector that we should subtract every vector from him
+    const findBaseVector = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
+        for (const measure of measuresObjects) {
+            if (measure.file.endsWith(baseMeasurement)) {
+                return JSON.parse(JSON.stringify(measure.vector));
+            }
+        }
+    }
 
     async function loadMeaurements() {
         let measurementFiles = getFilePaths(files);
         let measurementsObjects = await getMeasuresObjects(measurementFiles);
         let matrix = initWaveLengthColumnInMatrix(measurementsObjects);
-        buildMatrix(measurementsObjects, matrix);
+        normalize ? buildMatrixWithNormalize(measurementsObjects, matrix) : buildMatrix(measurementsObjects, matrix);
         console.log(matrix);
     }
 
