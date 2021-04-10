@@ -1,4 +1,7 @@
 {
+    "engines": {
+        "node": ">9.9.0"
+    },
     "scripts": {
         "build": "node script/build",
         "build-prod": "cross-env BUILD_ENV=production NODE_ENV=production node script/build",

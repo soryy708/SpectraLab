@@ -4,9 +4,9 @@ type Props = {
     type?: 'button' | 'submit' | 'reset',
     onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void,
     text: string,
-    disabled: boolean,
-    primary: boolean,
-}
+    disabled?: boolean,
+    primary?: boolean,
+};
 
 const Button: React.FunctionComponent<Props> = (props: Props) => {
     return <button

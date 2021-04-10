@@ -73,3 +73,64 @@ input[type="checkbox"] {
     font-size: 1em;
     padding: 0.25em 0.5em;
 }
+
+.toggle .label {
+    font-size: 0.75em;
+}
+
+.toggle button {
+    position: relative;
+    height: 1em;
+    width: 2em;
+    border-radius: 50%/1em;
+    padding: 0.125em;
+    transition: background-color 0.15s;
+}
+
+.toggle button::before {
+    content: "";
+    display: block;
+    height: 100%;
+    width: 0.5em;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: margin-left 0.3s;
+}
+
+.toggle.on button {
+    background-color: #336fc9;
+}
+
+.toggle.on button::before {
+    margin-left: 1.125em;
+}
+
+.toggle.off button {
+    background-color: #bebebe;
+}
+
+.toggle.off button::before {
+    margin-left: 0;
+}
+
+.graphPage {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    box-sizing: border-box;
+    height: 100vh;
+}
+
+.graphPage .leftPart {
+    padding-right: 0.5em;
+}
+
+.graphPage .rightPart {
+    flex-grow: 1;
+    background-color: #000;
+}
+
+.graphPage .rightPart canvas {
+    width: 100%;
+    height: 100%;
+}
