@@ -22,29 +22,50 @@ const LoadPage: React.FunctionComponent = () => {
         return paths;
     }
 
-    // add column of measurements to the matrix
-    const addMeasurementsToMatrix = () => {
-
+    // Read from files measures and create objects
+    const getMeasuresObjects = (measurementFiles: Array<string>) => {
+        return Promise.all(measurementFiles.map(async file => {
+            const data = await fs.promises.readFile(file, 'utf8');
+            const vector = data.split('\n').map(measure => {
+                const [waveLength, waveIntensity] = measure.trim().split(/\s+/);
+                return { waveLength, waveIntensity };
+            });
+            return { file, vector };
+        }));
     }
 
-    async function loadMeaurementsFiles() {
-        let measurementFiles = await getFilePaths(files);
-        console.log(measurementFiles);
-
-        for (const file of measurementFiles) {
-            await fs.readFile(file, 'utf8', (err, data) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                // Two dimentional vector - [waveLength, waveIntensity]
-                let measuresVector: string[][] = data.split('\n').map(measure => measure.trim().split(/\s+/));
-                console.log(measuresVector);
-
-                // 1. Is it a base measurement file?
-                // 2. Is it in the desiarble range?
-            });
+    const initWaveLengthColumnInMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
+        let matrix: Number[][] = [];
+        for (const measure of measuresObjects[0].vector) {
+            matrix.push([Number(measure.waveLength)]);
         }
+        return matrix;
+    }
+
+
+    const buildMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: Number[][]) => {
+        for (const measure of measuresObjects) {
+            for (let i = 0; i < measure.vector.length; i++) {
+                matrix[i].push(Number(measure.vector[i].waveIntensity));
+            }
+        }
+    }
+
+    const buildMatrixWithNormalize = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: Number[][]) => {
+        for (const measure of measuresObjects) {
+            for (let i = 0; i < measure.vector.length; i++) {
+                matrix[i].push(Number(measure.vector[i].waveIntensity));
+            }
+        }
+    }
+
+
+    async function loadMeaurements() {
+        let measurementFiles = getFilePaths(files);
+        let measurementsObjects = await getMeasuresObjects(measurementFiles);
+        let matrix = initWaveLengthColumnInMatrix(measurementsObjects);
+        buildMatrix(measurementsObjects, matrix);
+        console.log(matrix);
     }
 
 
@@ -63,7 +84,7 @@ const LoadPage: React.FunctionComponent = () => {
                     }
                     const filePathsInDir = await util.promisify(fs.readdir)(filePaths[0], { withFileTypes: true });
                     setFiles(filePathsInDir.filter(dirent => dirent.isFile()).map(dirent => dirent.name));
-                    // If we dont set it now, it will be an empty string
+                    // If we dont set it now, it will be an empty string. Will change only if user will change it
                     setBaseMeasurement(filePathsInDir[0].name)
                 }}
                 buttonType='button'
@@ -84,7 +105,7 @@ const LoadPage: React.FunctionComponent = () => {
         </div>
 
         <div style={{ textAlign: 'center' }}>
-            <Button primary text="Continue" disabled={files.length === 0} onClick={loadMeaurementsFiles} />
+            <Button primary text="Continue" disabled={files.length === 0} onClick={loadMeaurements} />
         </div>
     </div>;
 };
