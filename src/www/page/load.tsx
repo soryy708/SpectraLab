@@ -5,8 +5,13 @@ import React, { useState } from 'react';
 import electron from 'electron';
 import ButtonedInput from '../components/buttonedInput';
 import Button from '../components/button';
+import Matrix from '../../matrix';
 
-const LoadPage: React.FunctionComponent = () => {
+type LoadPageProps = {
+    onLoad: (matrix: Matrix) => void;
+};
+
+const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) => {
     const [measurementsPath, setMeasurementsPath] = useState('');
     const [normalize, setNormalize] = useState<boolean>(false);
     const [files, setFiles] = useState<string[]>([]);
@@ -83,6 +88,7 @@ const LoadPage: React.FunctionComponent = () => {
         } else {
             buildMatrix(measurementsObjects, matrix);
         }
+        props.onLoad(new Matrix(matrix));
     }
 
 
