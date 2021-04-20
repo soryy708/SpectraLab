@@ -96,6 +96,63 @@ class Matrix {
         }
         return offsets.map(([offX, offY]) => [x + offX, y + offY]);
     }
+
+    getColumn(index: number): Matrix {
+        if (index < 0 || index >= this.sizeX) {
+            throw new Error('Out of range');
+        }
+
+        const vector: Array<number> = [];
+        for (let i = 0; i < this.sizeY; ++i) {
+            vector.push(this.data[i][index]);
+        }
+        return new Matrix(vector.map(scalar => [scalar]));
+    }
+
+    getRow(index: number): Matrix {
+        if (index < 0 || index >= this.sizeY) {
+            throw new Error('Out of range');
+        }
+
+        const vector: Array<number> = [];
+        for (let i = 0; i < this.sizeX; ++i) {
+            vector.push(this.data[index][i]);
+        }
+        return new Matrix([vector]);
+    }
+
+    dotProduct(other: Matrix): Matrix {
+        if (this.sizeX !== other.sizeY || this.sizeY !== other.sizeX) {
+            throw new Error('Bad size');
+        }
+
+        const newData: Array<Array<number>> = [];
+        for (let myRow = 0; myRow < this.sizeY; ++myRow) {
+            const row: Array<number> = [];
+            for (let otherColumn = 0; otherColumn < other.sizeX; ++otherColumn) {
+                let sum = 0;
+                // Worth noting: this.sizeX == other.sizeY
+                for (let i = 0; i < this.sizeX; ++i) {
+                    sum += this.data[myRow][i] * other.data[i][otherColumn];
+                }
+                row.push(sum);
+            }
+            newData.push(row);
+        }
+        return new Matrix(newData);
+    }
+
+    mulScalar(scalar: number): Matrix {
+        const newData: Array<Array<number>> = [];
+        for (let i = 0; i < this.sizeY; ++i) {
+            const row: Array<number> = [];
+            for (let j = 0; j < this.sizeX; ++j) {
+                row.push(this.data[i][j] * scalar);
+            }
+            newData.push(row);
+        }
+        return new Matrix(newData);
+    }
 }
 
 export default Matrix;
