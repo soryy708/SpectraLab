@@ -79,6 +79,12 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         }
     };
 
+    function removeFirstColumn(matrix: Array<Array<number>>): void {
+        matrix.forEach((row, index) => {
+            matrix[index] = row.slice(1);
+        });
+    }
+
     async function loadMeaurements() {
         const measurementFiles = getFilePaths(files);
         const measurementsObjects = await getMeasuresObjects(measurementFiles);
@@ -88,6 +94,7 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         } else {
             buildMatrix(measurementsObjects, matrix);
         }
+        removeFirstColumn(matrix);
         props.onLoad(new Matrix(matrix));
     }
 
