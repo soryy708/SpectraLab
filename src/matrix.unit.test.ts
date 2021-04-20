@@ -240,19 +240,6 @@ describe('Matrix', () => {
             });
         });
 
-        it('Throws for 1,2 * 2,3', () => {
-            const mat1 = new Matrix([
-                [0, 0],
-            ]);
-            const mat2 = new Matrix([
-                [0, 0, 0],
-                [0, 0, 0],
-            ]);
-            assert.throws(() => {
-                mat1.dotProduct(mat2);
-            });
-        });
-
         it('Calculates case1 correctly', () => {
             const mat1 = new Matrix([
                 [1, 2, 3],

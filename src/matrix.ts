@@ -122,7 +122,7 @@ class Matrix {
     }
 
     dotProduct(other: Matrix): Matrix {
-        if (this.sizeX !== other.sizeY || this.sizeY !== other.sizeX) {
+        if (this.sizeX !== other.sizeY) {
             throw new Error('Bad size');
         }
 
