@@ -1,6 +1,6 @@
 {
     "engines": {
-        "node": ">9.9.0"
+        "node": ">11.14.0"
     },
     "scripts": {
         "build": "node script/build",

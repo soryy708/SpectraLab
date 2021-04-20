@@ -14,45 +14,54 @@ const LoadPage: React.FunctionComponent = () => {
 
     // Get all file paths
     const getFilePaths = (filesArray: Array<string>) => {
-        let paths: Array<string> = []
+        const paths: Array<string> = [];
         filesArray.forEach(file => {
-            let fullPathMeasurementFile = measurementsPath + '\\' + file;
+            const fullPathMeasurementFile = measurementsPath + '\\' + file;
             paths.push(fullPathMeasurementFile);
-        })
+        });
         return paths;
-    }
+    };
 
     // Read from files measures and create objects
     const getMeasuresObjects = (measurementFiles: Array<string>) => {
         return Promise.all(measurementFiles.map(async file => {
             const data = await fs.promises.readFile(file, 'utf8');
             const vector = data.split('\n').map(measure => {
-                const [waveLength, waveIntensity] = measure.trim().split(/\s+/);
+                const [waveLength, waveIntensity] = measure.trim().split(/\s+/u);
                 return { waveLength, waveIntensity };
             });
             return { file, vector };
         }));
-    }
+    };
 
     // Set wave lengths in the matrix
     const initWaveLengthColumnInMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
-        let matrix: Number[][] = [];
+        const matrix: number[][] = [];
         for (const measure of measuresObjects[0].vector) {
             matrix.push([Number(measure.waveLength)]);
         }
         return matrix;
-    }
+    };
 
 
-    const buildMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: Number[][]) => {
+    const buildMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: number[][]) => {
         for (const measure of measuresObjects) {
             for (let i = 0; i < measure.vector.length; i++) {
                 matrix[i].push(Number(measure.vector[i].waveIntensity));
             }
         }
-    }
+    };
 
-    const buildMatrixWithNormalize = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: Number[][]) => {
+    // Find the reference/base vector that we should subtract every vector from him
+    const findBaseVector = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
+        for (const measure of measuresObjects) {
+            if (measure.file.endsWith(baseMeasurement)) {
+                return JSON.parse(JSON.stringify(measure.vector));
+            }
+        }
+    };
+
+    const buildMatrixWithNormalize = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: number[][]) => {
         const baseVector = findBaseVector(measuresObjects);
         for (const measure of measuresObjects) {
             if (!measure.file.endsWith(baseMeasurement)) {
@@ -63,23 +72,17 @@ const LoadPage: React.FunctionComponent = () => {
                 }
             }
         }
-    }
-
-    // Find the reference/base vector that we should subtract every vector from him
-    const findBaseVector = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
-        for (const measure of measuresObjects) {
-            if (measure.file.endsWith(baseMeasurement)) {
-                return JSON.parse(JSON.stringify(measure.vector));
-            }
-        }
-    }
+    };
 
     async function loadMeaurements() {
-        let measurementFiles = getFilePaths(files);
-        let measurementsObjects = await getMeasuresObjects(measurementFiles);
-        let matrix = initWaveLengthColumnInMatrix(measurementsObjects);
-        normalize ? buildMatrixWithNormalize(measurementsObjects, matrix) : buildMatrix(measurementsObjects, matrix);
-        console.log(matrix);
+        const measurementFiles = getFilePaths(files);
+        const measurementsObjects = await getMeasuresObjects(measurementFiles);
+        const matrix = initWaveLengthColumnInMatrix(measurementsObjects);
+        if (normalize) {
+            buildMatrixWithNormalize(measurementsObjects, matrix);
+        } else {
+            buildMatrix(measurementsObjects, matrix);
+        }
     }
 
 
@@ -99,7 +102,7 @@ const LoadPage: React.FunctionComponent = () => {
                     const filePathsInDir = await util.promisify(fs.readdir)(filePaths[0], { withFileTypes: true });
                     setFiles(filePathsInDir.filter(dirent => dirent.isFile()).map(dirent => dirent.name));
                     // If we dont set it now, it will be an empty string. Will change only if user will change it
-                    setBaseMeasurement(filePathsInDir[0].name)
+                    setBaseMeasurement(filePathsInDir[0].name);
                 }}
                 buttonType='button'
                 buttonText='Browse'
