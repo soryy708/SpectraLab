@@ -303,4 +303,85 @@ describe('Matrix', () => {
             }
         });
     });
+
+    describe('transpose', () => {
+        it('Correctly handles column', () => {
+            const input = new Matrix([
+                [3],
+                [5],
+            ]);
+            const expected = new Matrix([
+                [3, 5],
+            ]);
+            const actual = input.transpose();
+
+            assert.strictEqual(actual.getWidth(), expected.getWidth());
+            assert.strictEqual(actual.getHeight(), expected.getHeight());
+            for (let i = 0; i < actual.getHeight(); ++i) {
+                for (let j = 0; j < actual.getWidth(); ++j) {
+                    assert.strictEqual(actual.getAt(j, i), expected.getAt(j, i));
+                }
+            }
+        });
+        
+        it('Correctly handles row', () => {
+            const input = new Matrix([
+                [3, 5],
+            ]);
+            const expected = new Matrix([
+                [3],
+                [5],
+            ]);
+            const actual = input.transpose();
+            
+            assert.strictEqual(actual.getWidth(), expected.getWidth());
+            assert.strictEqual(actual.getHeight(), expected.getHeight());
+            for (let i = 0; i < actual.getHeight(); ++i) {
+                for (let j = 0; j < actual.getWidth(); ++j) {
+                    assert.strictEqual(actual.getAt(j, i), expected.getAt(j, i));
+                }
+            }
+        });
+        
+        it('Correctly handles square', () => {
+            const input = new Matrix([
+                [3, 5],
+                [7, 11],
+            ]);
+            const expected = new Matrix([
+                [3, 7],
+                [5, 11],
+            ]);
+            const actual = input.transpose();
+            
+            assert.strictEqual(actual.getWidth(), expected.getWidth());
+            assert.strictEqual(actual.getHeight(), expected.getHeight());
+            for (let i = 0; i < actual.getHeight(); ++i) {
+                for (let j = 0; j < actual.getWidth(); ++j) {
+                    assert.strictEqual(actual.getAt(j, i), expected.getAt(j, i));
+                }
+            }
+        });
+        
+        it('Correctly handles rectangle', () => {
+            const input = new Matrix([
+                [3, 5, 7],
+                [11, 15, 17],
+            ]);
+            const expected = new Matrix([
+                [3, 11],
+                [5, 15],
+                [7, 17],
+            ]);
+            const actual = input.transpose();
+            
+            assert.strictEqual(actual.getWidth(), expected.getWidth());
+            assert.strictEqual(actual.getHeight(), expected.getHeight());
+            for (let i = 0; i < actual.getHeight(); ++i) {
+                for (let j = 0; j < actual.getWidth(); ++j) {
+                    assert.strictEqual(actual.getAt(j, i), expected.getAt(j, i));
+                }
+            }
+        });
+    });
 });

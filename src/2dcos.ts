@@ -16,17 +16,13 @@ function synchronous(matrix: Matrix): Matrix {
     const newMatrix: Array<Array<number>> = [];
     const height = matrix.getHeight();
     const width = matrix.getWidth();
-    if (height !== width) {
-        throw new Error('Not square');
-    }
-    const m = width; // Could be either width or height since they are equal
 
     for (let i = 0; i < height; ++i) {
         const row: Array<number> = [];
-        for (let j = 0; j < width; ++j) {
+        for (let j = 0; j < height; ++j) {
             const yTilda1 = matrix.getRow(i);
-            const yTilda2 = matrix.getColumn(j);
-            const phi = 1 / (m-1) * yTilda1.dotProduct(yTilda2).getAt(0, 0);
+            const yTilda2 = matrix.getRow(j).transpose();
+            const phi = 1 / (width-1) * yTilda1.dotProduct(yTilda2).getAt(0, 0);
             row.push(phi);
         }
         newMatrix.push(row);
@@ -37,19 +33,14 @@ function synchronous(matrix: Matrix): Matrix {
 function asynchronous(matrix: Matrix): Matrix {const newMatrix: Array<Array<number>> = [];
     const height = matrix.getHeight();
     const width = matrix.getWidth();
-    if (height !== width) {
-        throw new Error('Not square');
-    }
-    const m = width; // Could be either width or height since they are equal
+    const N = hilbertNodaTransformationMatrix(width);
 
-    const N = hilbertNodaTransformationMatrix(m);
-
-    for (let i = 0; i < m; ++i) {
+    for (let i = 0; i < height; ++i) {
         const row: Array<number> = [];
-        for (let j = 0; j < m; ++j) {
+        for (let j = 0; j < height; ++j) {
             const yTilda1 = matrix.getRow(i);
-            const yTilda2 = matrix.getColumn(j);
-            const psi = 1 / (m-1) * yTilda1.dotProduct(N.dotProduct(yTilda2)).getAt(0, 0);
+            const yTilda2 = matrix.getRow(j).transpose();
+            const psi = 1 / (width-1) * yTilda1.dotProduct(N.dotProduct(yTilda2)).getAt(0, 0);
             row.push(psi);
         }
         newMatrix.push(row);

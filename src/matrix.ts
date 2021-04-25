@@ -153,6 +153,18 @@ class Matrix {
         }
         return new Matrix(newData);
     }
+
+    transpose(): Matrix {
+        const newData: Array<Array<number>> = [];
+        for (let i = 0; i < this.sizeX; ++i) {
+            const row: Array<number> = [];
+            for (let j = 0; j < this.sizeY; ++j) {
+                row.push(this.data[j][i]);
+            }
+            newData.push(row);
+        }
+        return new Matrix(newData);
+    }
 }
 
 export default Matrix;
