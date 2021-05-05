@@ -29,17 +29,24 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
     }, [canvasRef]);
 
     useEffect(() => {
-        const makeVertex = (x: number, y: number) => {
+        const normalize = (val: number, min: number, max: number) => (val - min) / (max - min);
+    
+        const makeVertex = (x: number, y: number, minZ: number, maxZ: number) => {
+            const z = props.data.getAt(x, y);
             return [
-                x / props.data.getWidth()  - 0.5,
-                props.data.getAt(x, y),
-                y / props.data.getHeight() - 0.5,
+                normalize(x, 0, props.data.getWidth()) - 0.5,
+                normalize(z, minZ, maxZ) - 0.5,
+                normalize(y, 0, props.data.getHeight()) - 0.5,
             ];
         };
 
         const renderShape = (scene: THREE.Scene) => {
             const geometry = new THREE.BufferGeometry();
             const vertices: number[] = [];
+
+            const minZ = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
+            const maxZ = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
+
             props.data.forEach((val, [x, y]) => {
                 const neighborIndexes = props.data.cardinalNeighborIndexesOf(x, y);
                 if (neighborIndexes.length < 2 || neighborIndexes.length > 4) {
@@ -48,9 +55,9 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 }
                 for (let i = 0; i < neighborIndexes.length; ++i) {
                     vertices.push(...[
-                        ...makeVertex(x, y),
-                        ...makeVertex(...neighborIndexes[i]),
-                        ...makeVertex(...neighborIndexes[(i+1) % neighborIndexes.length]),
+                        ...makeVertex(x, y, minZ, maxZ),
+                        ...makeVertex(...neighborIndexes[i], minZ, maxZ),
+                        ...makeVertex(...neighborIndexes[(i+1) % neighborIndexes.length], minZ, maxZ),
                     ]);
                 }
             });
@@ -77,7 +84,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 const cubes: THREE.Mesh[] = [];
                 const makeCubeMesh = (x: number, y: number, mat: THREE.Material) => {
                     const cubeMesh = new THREE.Mesh(cubeGeometry, mat);
-                    const vertex = makeVertex(x, y);
+                    const vertex = makeVertex(x, y, minVal, maxVal);
                     cubeMesh.position.x = vertex[0];
                     cubeMesh.position.y = vertex[1];
                     cubeMesh.position.z = vertex[2];
