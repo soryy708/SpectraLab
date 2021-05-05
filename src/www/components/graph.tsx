@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { MeshLine, MeshLineMaterial } from 'three.meshline';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Conrec } from 'ml-conrec';
 import Matrix from '../../matrix';
@@ -86,28 +87,36 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             const conrec = new Conrec(props.data.toMultiDimensionalArray());
             const contours: Array<{[key: number]: {x: number, y: number}, k: number, level: number}> = conrec.drawContour({contourDrawer: 'shape'});
             contours.forEach(contour => {
-                const points: THREE.Vector3[] = [];
+                const points: number[] = [];
                 const keys = Object.keys(contour);
                 const numericKeys = keys.filter(key => !isNaN(Number(key)));
                 numericKeys.forEach(key => {
                     const z = contour.level;
                     const x = contour[Number(key)].x;
                     const y = contour[Number(key)].y;
-                    points.push(new THREE.Vector3(
+                    points.push(
                         normalize(x, 0, props.data.getWidth()) - 0.5,
                         normalize(z, minZ, maxZ) - 0.5,
                         normalize(y, 0, props.data.getHeight()) - 0.5
-                    ));
+                    );
                 });
 
                 if (points.length === 0) {
                     return;
                 }
                 
-                const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                const material = new THREE.LineBasicMaterial({color: 0xff8800});
-                const line = new THREE.Line(geometry, material);
-                scene.add(line);
+                const canvas = canvasRef.current;
+                const { width, height } = canvas.getBoundingClientRect();
+                const material = new MeshLineMaterial({
+                    color: 0xff8800,
+                    resolution: new THREE.Vector2(width, height),
+                    sizeAttenuation: 0,
+                    lineWidth: 8,
+                });
+                const line = new MeshLine();
+                line.setPoints(points);
+                const mesh = new THREE.Mesh(line, material);
+                scene.add(mesh);
             });
         };
 
