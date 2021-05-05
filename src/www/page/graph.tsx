@@ -14,6 +14,7 @@ type CorspecType = 'Φ' | 'Ψ';
 const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProps) => {
     const [showLocalExtremum, setShowLocalExtremum] = useState(false);
     const [showGlobalExtremum, setShowGlobalExtremum] = useState(false);
+    const [showContours, setShowContours] = useState(false);
     const [corspecType, setCorspecType] = useState<CorspecType>('Φ');
     const [dataAsΦ, setDataAsΦ] = useState<Matrix>(new Matrix([[0]]));
     const [dataAsΨ, setDataAsΨ] = useState<Matrix>(new Matrix([[0]]));
@@ -53,12 +54,18 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 value={showGlobalExtremum}
                 onChange={(newVal) => setShowGlobalExtremum(newVal)}
             />
+            <Toggle
+                label="Show contours?"
+                value={showContours}
+                onChange={(newVal) => setShowContours(newVal)}
+            />
         </div>
         <div className="rightPart">
             <Graph
                 data={data}
                 showLocalExtremum={showLocalExtremum}
                 showGlobalExtremum={showGlobalExtremum}
+                showContours={showContours}
             />
         </div>
     </div>;

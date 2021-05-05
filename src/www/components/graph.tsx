@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { Conrec } from 'ml-conrec';
 import Matrix from '../../matrix';
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
     style?: any;
     showLocalExtremum?: boolean;
     showGlobalExtremum?: boolean;
+    showContours?: boolean;
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
@@ -71,6 +73,42 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             const wireframeLines = new THREE.LineSegments(wireframe);
             scene.add(mesh);
             scene.add(wireframeLines);
+        };
+
+        const renderContours = (scene: THREE.Scene) => {
+            if (!props.showContours) {
+                return;
+            }
+
+            const minZ = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
+            const maxZ = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
+
+            const conrec = new Conrec(props.data.toMultiDimensionalArray());
+            const contours: Array<{[key: number]: {x: number, y: number}, k: number, level: number}> = conrec.drawContour({contourDrawer: 'shape'});
+            contours.forEach(contour => {
+                const points: THREE.Vector3[] = [];
+                const keys = Object.keys(contour);
+                const numericKeys = keys.filter(key => !isNaN(Number(key)));
+                numericKeys.forEach(key => {
+                    const z = contour.level;
+                    const x = contour[Number(key)].x;
+                    const y = contour[Number(key)].y;
+                    points.push(new THREE.Vector3(
+                        normalize(x, 0, props.data.getWidth()) - 0.5,
+                        normalize(z, minZ, maxZ) - 0.5,
+                        normalize(y, 0, props.data.getHeight()) - 0.5
+                    ));
+                });
+
+                if (points.length === 0) {
+                    return;
+                }
+                
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({color: 0xff8800});
+                const line = new THREE.Line(geometry, material);
+                scene.add(line);
+            });
         };
 
         const renderExtremums = (scene: THREE.Scene) => {
@@ -138,6 +176,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
 
         scene.add(new THREE.HemisphereLight(0xffffff, 0x0a0a0a, 1));
         renderShape(scene);
+        renderContours(scene);
         renderExtremums(scene);
 
         const newCamera = defineCamera();
@@ -149,7 +188,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             renderer.render(scene, newCamera);
         };
         animate();
-    }, [renderer, props.data, props.showLocalExtremum, props.showGlobalExtremum]);
+    }, [renderer, props.data, props.showLocalExtremum, props.showGlobalExtremum, props.showContours]);
 
     const onResize = (callback: () => void, params: any[]) => {
         useLayoutEffect(() => {
