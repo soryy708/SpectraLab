@@ -16,6 +16,7 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
     const [normalize, setNormalize] = useState<boolean>(false);
     const [files, setFiles] = useState<string[]>([]);
     const [baseMeasurement, setBaseMeasurement] = useState('');
+    const [wavelengthToRowIndexObject, setWavelengthToRowIndexObject] = useState(Object());
 
     // Get all file paths
     const getFilePaths = (filesArray: Array<string>) => {
@@ -85,6 +86,25 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         });
     }
 
+    function saveWavelengths(matrix: Array<Array<number>>): void {
+        let wavelengthToRowIndex = Object();
+        matrix.forEach((row, index) => {
+            let currWavelength: number = row[0];
+            wavelengthToRowIndex[currWavelength] = index;
+        });
+        setWavelengthToRowIndexObject({ ...wavelengthToRowIndex });
+    }
+
+    function removeUnselectedWavelengths(matrix: Array<Array<number>>, minLength: number, maxLength: number, wavelengthToRowIndex: { [number: number]: any }): void {
+        console.log(matrix);
+        for (const [wavelength, rowIndex] of Object.entries(wavelengthToRowIndex)) {
+            if (!(Number(wavelength) >= minLength && Number(wavelength) <= maxLength)) {
+                matrix.splice(Number(rowIndex), 1);
+            }
+        }
+        console.log(matrix);
+    }
+
     async function loadMeaurements() {
         const measurementFiles = getFilePaths(files);
         const measurementsObjects = await getMeasuresObjects(measurementFiles);
@@ -94,7 +114,10 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         } else {
             buildMatrix(measurementsObjects, matrix);
         }
+        saveWavelengths(matrix);
         removeFirstColumn(matrix);
+        let exampleObj = { 4499.11304: 0, 4497.18457: 1, 4495.2561: 2 };
+        removeUnselectedWavelengths(matrix, 4496, 4500, exampleObj)
         props.onLoad(new Matrix(matrix));
     }
 
