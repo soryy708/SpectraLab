@@ -113,6 +113,30 @@ input[type="checkbox"] {
     margin-left: 0;
 }
 
+.rangeSelect {
+    display: flex;
+    flex-direction: row;
+}
+
+.rangeSelect select {
+    flex-grow: 1;
+    min-width: 2em;
+}
+
+.rangeSelect :first-child {
+    border-right: none;
+}
+
+.rangeSelect :last-child {
+    border-left: none;
+}
+
+.rangeSelect span {
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 0.25em 0.5em;
+}
+
 .graphPage {
     display: flex;
     flex-direction: row;
