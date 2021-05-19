@@ -1,10 +1,11 @@
 import fs from 'fs';
 import util from 'util';
 import path from 'path';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import electron from 'electron';
 import ButtonedInput from '../components/buttonedInput';
 import Button from '../components/button';
+import RangeSelect from '../components/rangeSelect';
 import Matrix from '../../matrix';
 
 type LoadPageProps = {
@@ -21,6 +22,9 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
     const [normalize, setNormalize] = useState<boolean>(false);
     const [files, setFiles] = useState<string[]>([]);
     const [baseMeasurement, setBaseMeasurement] = useState('');
+    const [frequencies, setFrequencies] = useState<number[]>([]);
+    const [frequencyRangeMin, setFrequencyRangeMin] = useState<number>(NaN);
+    const [frequencyRangeMax, setFrequencyRangeMax] = useState<number>(NaN);
 
     async function parseFile(filePath: string): Promise<MeasurementFile> {
         const columnDeliminator = /\s+/u;
@@ -45,13 +49,37 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         const measurements = await Promise.all(measurementFilePaths.map(filePath => parseFile(filePath)));
         const baseMeasurementIndex = files.findIndex(file => file === baseMeasurement);
         const base = measurements[baseMeasurementIndex];
-        const baseAmplitude = base.amplitudes;
-        const spectrums = measurements.map(measurement => measurement.amplitudes);
+        
+        const minFreq = isNaN(frequencyRangeMin) ? frequencies[0] : frequencyRangeMin;
+        const maxFreq = isNaN(frequencyRangeMax) ? frequencies[frequencies.length - 1] : frequencyRangeMax;
+        let indexMin = frequencies.findIndex(freq => freq >= minFreq);
+        if (indexMin === -1) {
+            indexMin = 0;
+        }
+        let indexMax = frequencies.reverse().findIndex(freq => freq <= maxFreq);
+        if (indexMax === -1) {
+            indexMax = 0;
+        }
+        indexMax = frequencies.length-1 - indexMax;
+
+        const baseAmplitude = base.amplitudes.slice(indexMin, indexMax + 1);
+        const spectrums = measurements.map(measurement => measurement.amplitudes.slice(indexMin, indexMax + 1));
         const matrix = normalize ? normalizeSpectrums(spectrums, baseAmplitude) : spectrums;
         props.onLoad(new Matrix(matrix));
     }
 
-    return <div className="page">
+    useEffect(() => {
+        if (files.length === 0 || !baseMeasurement) {
+            return;
+        }
+        (async() => {
+            const { frequencies: parsedFrequencies } = await parseFile(path.join(measurementsPath, baseMeasurement));
+            setFrequencies(parsedFrequencies.sort((a, b) => a - b));
+        })()
+            .catch(err => console.error(err));
+    }, [measurementsPath, baseMeasurement]);
+
+    return <div className="page loadPage">
         <div className="formElement">
             <label className="label">Measurements directory</label>
             <ButtonedInput
@@ -85,6 +113,18 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
                 {files.map(file => <option key={file} value={file}>{path.basename(file)}</option>)}
             </select>
         </div>
+
+        {frequencies.length > 0 && <div className="formElement frequenciesRange">
+            <label className="label">Frequencies</label>
+            <RangeSelect
+                options={frequencies}
+                minValue={frequencyRangeMin}
+                maxValue={frequencyRangeMax}
+                onChangeMin={newValue => setFrequencyRangeMin(newValue)}
+                onChangeMax={newValue => setFrequencyRangeMax(newValue)}
+                compare={(lval, rval) => lval - rval}
+            />
+        </div>}
 
         <div style={{ textAlign: 'center' }}>
             <Button primary text="Continue" disabled={files.length === 0} onClick={loadMeaurements} />
