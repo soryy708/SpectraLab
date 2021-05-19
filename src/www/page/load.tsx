@@ -28,7 +28,7 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
 
         const asText = await fs.promises.readFile(filePath, 'utf8');
         const lines = asText.split(lineDeliminator);
-        const table = lines.map(line => line.replace(' ', '').split(columnDeliminator));
+        const table = lines.map(line => line.replace(/[ \t]+/u, '\t').trim().split(columnDeliminator));
         const data: {frequency: number, amplitude: number}[] = table.map(row => ({frequency: Number(row[0]), amplitude: Number(row[1])}));
         return {
             frequencies: data.map(datum => datum.frequency),
