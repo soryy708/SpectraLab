@@ -6,13 +6,15 @@ import Matrix from '../matrix';
 
 function App() {
     const [matrix, setMatrix] = useState<Matrix>(null);
+    const [frequencies, setFrequencies] = useState<number[]>([]);
     
     if (matrix) {
-        return <GraphRoute data={matrix}/>;
+        return <GraphRoute data={matrix} frequencies={frequencies}/>;
     }
 
-    return <LoadRoute onLoad={(mat) => {
+    return <LoadRoute onLoad={(mat, freq) => {
         setMatrix(mat);
+        setFrequencies(freq);
     }}/>;
 }
 

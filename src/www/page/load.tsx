@@ -9,7 +9,7 @@ import RangeSelect from '../components/rangeSelect';
 import Matrix from '../../matrix';
 
 type LoadPageProps = {
-    onLoad: (matrix: Matrix) => void;
+    onLoad: (matrix: Matrix, frequencies: number[]) => void;
 };
 
 type MeasurementFile = {
@@ -65,7 +65,7 @@ const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) 
         const baseAmplitude = base.amplitudes.slice(indexMin, indexMax + 1);
         const spectrums = measurements.map(measurement => measurement.amplitudes.slice(indexMin, indexMax + 1));
         const matrix = normalize ? normalizeSpectrums(spectrums, baseAmplitude) : spectrums;
-        props.onLoad(new Matrix(matrix));
+        props.onLoad(new Matrix(matrix), frequencies.slice(indexMin, indexMax + 1));
     }
 
     useEffect(() => {
