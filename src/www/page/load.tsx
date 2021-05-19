@@ -11,93 +11,45 @@ type LoadPageProps = {
     onLoad: (matrix: Matrix) => void;
 };
 
+type MeasurementFile = {
+    frequencies: number[];
+    amplitudes: number[];
+};
+
 const LoadPage: React.FunctionComponent<LoadPageProps> = (props: LoadPageProps) => {
     const [measurementsPath, setMeasurementsPath] = useState('');
     const [normalize, setNormalize] = useState<boolean>(false);
     const [files, setFiles] = useState<string[]>([]);
     const [baseMeasurement, setBaseMeasurement] = useState('');
 
-    // Get all file paths
-    const getFilePaths = (filesArray: Array<string>) => {
-        const paths: Array<string> = [];
-        filesArray.forEach(file => {
-            const fullPathMeasurementFile = measurementsPath + '\\' + file;
-            paths.push(fullPathMeasurementFile);
-        });
-        return paths;
-    };
+    async function parseFile(filePath: string): Promise<MeasurementFile> {
+        const columnDeliminator = /\s+/u;
+        const lineDeliminator = '\n';
 
-    // Read from files measures and create objects
-    const getMeasuresObjects = (measurementFiles: Array<string>) => {
-        return Promise.all(measurementFiles.map(async file => {
-            const data = await fs.promises.readFile(file, 'utf8');
-            const vector = data.split('\n').map(measure => {
-                const [waveLength, waveIntensity] = measure.trim().split(/\s+/u);
-                return { waveLength, waveIntensity };
-            });
-            return { file, vector };
-        }));
-    };
+        const asText = await fs.promises.readFile(filePath, 'utf8');
+        const lines = asText.split(lineDeliminator);
+        const table = lines.map(line => line.replace(' ', '').split(columnDeliminator));
+        const data: {frequency: number, amplitude: number}[] = table.map(row => ({frequency: Number(row[0]), amplitude: Number(row[1])}));
+        return {
+            frequencies: data.map(datum => datum.frequency),
+            amplitudes: data.map(datum => datum.amplitude),
+        };
+    }
 
-    // Set wave lengths in the matrix
-    const initWaveLengthColumnInMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
-        const matrix: number[][] = [];
-        for (const measure of measuresObjects[0].vector) {
-            matrix.push([Number(measure.waveLength)]);
-        }
-        return matrix;
-    };
-
-
-    const buildMatrix = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: number[][]) => {
-        for (const measure of measuresObjects) {
-            for (let i = 0; i < measure.vector.length; i++) {
-                matrix[i].push(Number(measure.vector[i].waveIntensity));
-            }
-        }
-    };
-
-    // Find the reference/base vector that we should subtract every vector from him
-    const findBaseVector = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[]) => {
-        for (const measure of measuresObjects) {
-            if (measure.file.endsWith(baseMeasurement)) {
-                return JSON.parse(JSON.stringify(measure.vector));
-            }
-        }
-    };
-
-    const buildMatrixWithNormalize = (measuresObjects: { file: string, vector: { waveLength: string, waveIntensity: string }[] }[], matrix: number[][]) => {
-        const baseVector = findBaseVector(measuresObjects);
-        for (const measure of measuresObjects) {
-            if (!measure.file.endsWith(baseMeasurement)) {
-                // Substruct the base vector and push to the matrix
-                for (let i = 0; i < measure.vector.length; i++) {
-                    const substructedIntensity = Number(measure.vector[i].waveIntensity) - Number(baseVector[i].waveIntensity);
-                    matrix[i].push(substructedIntensity);
-                }
-            }
-        }
-    };
-
-    function removeFirstColumn(matrix: Array<Array<number>>): void {
-        matrix.forEach((row, index) => {
-            matrix[index] = row.slice(1);
-        });
+    function normalizeSpectrums(spectrums: number[][], base: number[]): number[][] {
+        return spectrums.map(spectrum => spectrum.map((amplitude, i) => amplitude - base[i]));
     }
 
     async function loadMeaurements() {
-        const measurementFiles = getFilePaths(files);
-        const measurementsObjects = await getMeasuresObjects(measurementFiles);
-        const matrix = initWaveLengthColumnInMatrix(measurementsObjects);
-        if (normalize) {
-            buildMatrixWithNormalize(measurementsObjects, matrix);
-        } else {
-            buildMatrix(measurementsObjects, matrix);
-        }
-        removeFirstColumn(matrix);
+        const measurementFilePaths = files.map(file => path.join(measurementsPath, file));
+        const measurements = await Promise.all(measurementFilePaths.map(filePath => parseFile(filePath)));
+        const baseMeasurementIndex = files.findIndex(file => file === baseMeasurement);
+        const base = measurements[baseMeasurementIndex];
+        const baseAmplitude = base.amplitudes;
+        const spectrums = measurements.map(measurement => measurement.amplitudes);
+        const matrix = normalize ? normalizeSpectrums(spectrums, baseAmplitude) : spectrums;
         props.onLoad(new Matrix(matrix));
     }
-
 
     return <div className="page">
         <div className="formElement">
