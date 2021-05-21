@@ -10,6 +10,8 @@ function createWindow() {
             nodeIntegration: true,
         },
         resizable: true,
+        icon: process.cwd() + '\\assets\\icon.png',
+        title: 'Spectralab'
     });
 
     window.setMenu(null);
