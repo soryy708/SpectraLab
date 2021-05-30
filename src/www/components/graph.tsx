@@ -107,8 +107,9 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 
                 const canvas = canvasRef.current;
                 const { width, height } = canvas.getBoundingClientRect();
+                const maxHue = 120; // Green like global maximum
                 const material = new MeshLineMaterial({
-                    color: 0xff8800,
+                    color: new THREE.Color(`hsl(${normalize(contour.level, minZ, maxZ)*maxHue}, 100%, 50%)`),
                     resolution: new THREE.Vector2(width, height),
                     sizeAttenuation: 0,
                     lineWidth: 8,
