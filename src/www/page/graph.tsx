@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Line } from 'react-chartjs-2';
 import Graph from '../components/graph';
 import Button from '../components/button';
 import Toggle from '../components/toggle';
@@ -22,6 +23,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
     const [dataAsΨ, setDataAsΨ] = useState<Matrix>(new Matrix([[0]]));
     const [frequencyRangeMin, setFrequencyRangeMin] = useState<number>(NaN);
     const [frequencyRangeMax, setFrequencyRangeMax] = useState<number>(NaN);
+    const [selectedFrequency, setSelectedFrequency] = useState<number>(NaN);
 
     const data = (() => {
         const minFreq = isNaN(frequencyRangeMin) ? props.frequencies[0] : frequencyRangeMin;
@@ -86,14 +88,54 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                     compare={(lval, rval) => lval - rval}
                 />
             </div>}
+
+            {props.frequencies.length > 0 && <div className="formElement">
+                <label className="label">View single frequency</label>
+                <select
+                    value={String(selectedFrequency)}
+                    onChange={e => setSelectedFrequency(Number(e.target.value))}
+                >
+                    <option value="NaN">No</option>
+                    {props.frequencies.map(freq => <option key={freq}>{freq}</option>)}
+                </select>
+            </div>}
         </div>
         <div className="rightPart">
-            <Graph
-                data={data}
-                showLocalExtremum={showLocalExtremum}
-                showGlobalExtremum={showGlobalExtremum}
-                showContours={showContours}
-            />
+            {isNaN(selectedFrequency) ? (
+                <Graph
+                    data={data}
+                    showLocalExtremum={showLocalExtremum}
+                    showGlobalExtremum={showGlobalExtremum}
+                    showContours={showContours}
+                />
+            ) : (
+                <Line
+                    className="lineChart"
+                    type="line"
+                    data={{
+                        labels: [...Array(props.data.getHeight()).keys()],
+                        datasets: [{
+                            label: selectedFrequency,
+                            fill: false,
+                            borderColor: '#000',
+                            tension: 0.1,
+                            data: (()=>{
+                                const index = props.frequencies.findIndex(freq => freq === selectedFrequency);
+                                if (index === -1) {
+                                    return [];
+                                }
+                                switch (corspecType) {
+                                    case 'Φ':
+                                        return dataAsΦ.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
+                                    case 'Ψ':
+                                        return dataAsΨ.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
+                                }
+                            })()
+                        }],
+                    }}
+                />
+            )}
+
         </div>
     </div>;
 };
