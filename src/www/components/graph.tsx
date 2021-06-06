@@ -156,7 +156,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                         const neighborVals = neighborIndexes.map(([nx, ny]) => props.data.getAt(nx, ny));
                         const maxNeighborVal = neighborVals.reduce((max, cur) => cur > max ? cur : max, -Infinity);
                         const minNeighborVal = neighborVals.reduce((min, cur) => cur < min ? cur : min,  Infinity);
-                        if (val >= maxNeighborVal || val <= minNeighborVal) {
+                        if (val > maxNeighborVal || val < minNeighborVal) {
                             cubes.push(makeCubeMesh(x, y, cubeExtremumMaterial));
                         }
                     }
