@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import Graph from '../components/graph';
+import List from '../components/list';
 import Button from '../components/button';
 import Switch from '../components/switch';
 import Toggle from '../components/toggle';
@@ -49,6 +50,28 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
         }
     })();
 
+    const [globalExtremums, localExtremums] = (() => {
+        const maxVal = data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
+        const minVal = data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
+        const globals: {x: number, y: number, z: number}[] = [];
+        const locals: {x: number, y: number, z: number}[] = [];
+        data.forEach((val, [x, y]) => {
+            if (val === maxVal || val === minVal) {
+                globals.push({x, y, z: val});
+                return;
+            }
+            
+            const neighborIndexes = data.cardinalNeighborIndexesOf(x, y);
+            const neighborVals = neighborIndexes.map(([nx, ny]) => data.getAt(nx, ny));
+            const maxNeighborVal = neighborVals.reduce((max, cur) => cur > max ? cur : max, -Infinity);
+            const minNeighborVal = neighborVals.reduce((min, cur) => cur < min ? cur : min,  Infinity);
+            if (val > maxNeighborVal || val < minNeighborVal) {
+                locals.push({x, y, z: val});
+            }
+        });
+        return [globals, locals];
+    })();
+
     useEffect(() => {
         setDataAsΦ(corspec.synchronous(props.data));
         setDataAsΨ(corspec.asynchronous(props.data));
@@ -70,10 +93,22 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 value={showLocalExtremum}
                 onChange={(newVal) => setShowLocalExtremum(newVal)}
             />
+            <List
+                values={localExtremums}
+                onRenderItem={coords => <React.Fragment>
+                    x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
+                </React.Fragment>}
+            />
             <Toggle
                 label="Show global extremum?"
                 value={showGlobalExtremum}
                 onChange={(newVal) => setShowGlobalExtremum(newVal)}
+            />
+            <List
+                values={globalExtremums}
+                onRenderItem={coords => <React.Fragment>
+                    x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
+                </React.Fragment>}
             />
             <Toggle
                 label="Show contours?"
@@ -87,9 +122,13 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 value={projection}
                 onChange={(newVal: 'perspective' | 'orthographic') => setProjection(newVal)}
             />
-            {cursor && <div>
-                Cursor: x={Math.floor(cursor.x*10)/10} y={Math.floor(cursor.y*10)/10} z={Math.floor(cursor.z*10)/10}
-            </div>}
+            {cursor && <List
+                label="Cursor:"
+                values={[cursor]}
+                onRenderItem={coords => <React.Fragment>
+                    x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
+                </React.Fragment>}
+            />}
             {props.frequencies.length > 0 && <div className="formElement frequenciesRange">
                 <label className="label">Frequencies</label>
                 <RangeSelect
