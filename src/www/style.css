@@ -151,7 +151,16 @@ input[type="checkbox"] {
 
 .graphPage .rightPart {
     flex-grow: 1;
+}
+
+.graphPage .rightPart.threeJsView {
     background-color: #000;
+}
+
+.graphPage .rightPart.chartJsView {
+    background-color: #fff;
+    display: flex;
+    align-items: center;
 }
 
 .graphPage .rightPart canvas {

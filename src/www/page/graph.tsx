@@ -100,7 +100,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 </select>
             </div>}
         </div>
-        <div className="rightPart">
+        <div className={'rightPart ' + (isNaN(selectedFrequency) ? 'threeJsView' : 'chartJsView')}>
             {isNaN(selectedFrequency) ? (
                 <Graph
                     data={data}
