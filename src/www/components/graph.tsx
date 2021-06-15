@@ -17,19 +17,94 @@ type Props = {
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
     const canvasRef = useRef(null);
-    const [renderer, setRenderer] = useState(null);
-    const [camera, setCamera] = useState(null);
+    const [renderer, setRenderer] = useState<THREE.WebGLRenderer>(null);
+    const [camera, setCamera] = useState<THREE.PerspectiveCamera>(null);
+    const [scene, setScene] = useState<THREE.Scene>(null);
+    const [controls, setControls] = useState<OrbitControls>(null);
+    const [graph, setGraph] = useState<THREE.Object3D>(null);
 
     useEffect(() => {
         if (!canvasRef || !canvasRef.current) {
             return;
         }
         const canvas = canvasRef.current;
-        setRenderer(new THREE.WebGLRenderer({
+
+        const newRenderer = new THREE.WebGLRenderer({
             canvas,
             antialias: true,
-        }));
+        });
+        const newScene = new THREE.Scene();
+
+        setRenderer(newRenderer);
+        setScene(newScene);
+
+        return () => {
+            newRenderer.dispose();
+        };
     }, [canvasRef]);
+
+    useEffect(() => {
+        if (!canvasRef || !canvasRef.current || !scene || !renderer) {
+            return;
+        }
+
+        const canvas = canvasRef.current;
+        const { width, height } = canvas.getBoundingClientRect();
+        const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        setCamera(newCamera);
+        newCamera.position.z = 2;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(width, height, false);
+    }, [canvasRef, scene, renderer]);
+
+    useEffect(() => {
+        if (!scene) {
+            return;
+        }
+
+        const newLight = new THREE.HemisphereLight(0xffffff, 0x0a0a0a, 1);
+        scene.add(newLight);
+    }, [scene]);
+
+    useEffect(() => {
+        if (!renderer || !camera) {
+            return;
+        }
+        const newControls = new OrbitControls(camera, renderer.domElement);
+        setControls(newControls);
+        return () => {
+            newControls.dispose();
+        };
+    }, [renderer, camera]);
+
+    useEffect(() => {
+        if (!controls || !renderer) {
+            return;
+        }
+
+        let running = true;
+        const animate = () => {
+            if (!running) {
+                return;
+            }
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
+        return () => {
+            running = false;
+        };
+    }, [controls, renderer, scene, camera]);
+
+    useEffect(() => {
+        if (!scene) {
+            return;
+        }
+        const newGraph = new THREE.Object3D();
+        scene.add(newGraph);
+        setGraph(newGraph);
+    }, [scene]);
 
     useEffect(() => {
         const normalize = (val: number, min: number, max: number) => (val - min) / (max - min);
@@ -43,7 +118,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             ];
         };
 
-        const renderShape = (scene: THREE.Scene) => {
+        const renderShape = () => {
             const geometry = new THREE.BufferGeometry();
             const vertices: number[] = [];
 
@@ -72,11 +147,11 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             const mesh = new THREE.Mesh(geometry, material);
             const wireframe = new THREE.WireframeGeometry(geometry);
             const wireframeLines = new THREE.LineSegments(wireframe);
-            scene.add(mesh);
-            scene.add(wireframeLines);
+            graph.add(mesh);
+            graph.add(wireframeLines);
         };
 
-        const renderContours = (scene: THREE.Scene) => {
+        const renderContours = () => {
             if (!props.showContours) {
                 return;
             }
@@ -117,11 +192,11 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                 const line = new MeshLine();
                 line.setPoints(points);
                 const mesh = new THREE.Mesh(line, material);
-                scene.add(mesh);
+                graph.add(mesh);
             });
         };
 
-        const renderExtremums = (scene: THREE.Scene) => {
+        const renderExtremums = () => {
             if (props.showLocalExtremum || props.showGlobalExtremum) {
                 const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
                 const cubeExtremumMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
@@ -162,43 +237,20 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
                     }
                 });
                 cubes.forEach(cube => {
-                    scene.add(cube);
+                    graph.add(cube);
                 });
             }
         };
 
-        const defineCamera = () => {
-            const canvas = canvasRef.current;
-            const { width, height } = canvas.getBoundingClientRect();
-            const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            setCamera(newCamera);
-            newCamera.position.z = 2;
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(width, height, false);
-            return newCamera;
-        };
-
-        if (!renderer || !canvasRef || !canvasRef.current || !props.data) {
+        if (!graph) {
             return;
         }
 
-        const scene = new THREE.Scene();
-
-        scene.add(new THREE.HemisphereLight(0xffffff, 0x0a0a0a, 1));
-        renderShape(scene);
-        renderContours(scene);
-        renderExtremums(scene);
-
-        const newCamera = defineCamera();
-        const controls = new OrbitControls(newCamera, renderer.domElement);
-
-        const animate = () => {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, newCamera);
-        };
-        animate();
-    }, [renderer, props.data, props.showLocalExtremum, props.showGlobalExtremum, props.showContours]);
+        graph.clear();
+        renderShape();
+        renderContours();
+        renderExtremums();
+    }, [graph, props.data, props.showLocalExtremum, props.showGlobalExtremum, props.showContours]);
 
     const onResize = (callback: () => void, params: any[]) => {
         useLayoutEffect(() => {
@@ -211,7 +263,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
 
     onResize(() => {
         const canvas = canvasRef && canvasRef.current;
-        if (!camera || !canvas) {
+        if (!camera || !canvas || !renderer) {
             return;
         }
 
@@ -222,7 +274,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             camera.aspect = width / height;
             camera.updateProjectionMatrix();
         }
-    }, [canvasRef, camera]);
+    }, [canvasRef, renderer, camera]);
 
     return <canvas
         ref={canvasRef}
