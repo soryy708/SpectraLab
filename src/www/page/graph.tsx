@@ -26,6 +26,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
     const [frequencyRangeMax, setFrequencyRangeMax] = useState<number>(NaN);
     const [selectedFrequency, setSelectedFrequency] = useState<number>(NaN);
     const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
+    const [cursor, setCursor] = useState<{x: number, y: number, z: number}>(null);
 
     const data = (() => {
         const minFreq = isNaN(frequencyRangeMin) ? props.frequencies[0] : frequencyRangeMin;
@@ -86,6 +87,9 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 value={projection}
                 onChange={(newVal: 'perspective' | 'orthographic') => setProjection(newVal)}
             />
+            {cursor && <div>
+                Cursor: x={Math.floor(cursor.x*10)/10} y={Math.floor(cursor.y*10)/10} z={Math.floor(cursor.z*10)/10}
+            </div>}
             {props.frequencies.length > 0 && <div className="formElement frequenciesRange">
                 <label className="label">Frequencies</label>
                 <RangeSelect
@@ -117,6 +121,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                     showGlobalExtremum={showGlobalExtremum}
                     showContours={showContours}
                     projection={projection}
+                    onCursor={c => setCursor(c)}
                 />
             ) : (
                 <Line

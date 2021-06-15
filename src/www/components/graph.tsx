@@ -14,6 +14,7 @@ type Props = {
     showGlobalExtremum?: boolean;
     showContours?: boolean;
     projection?: 'perspective' | 'orthographic';
+    onCursor?: (coordinates: {x: number, y: number, z: number}) => void;
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
@@ -23,6 +24,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
     const [scene, setScene] = useState<THREE.Scene>(null);
     const [controls, setControls] = useState<OrbitControls>(null);
     const [graph, setGraph] = useState<THREE.Object3D>(null);
+    const [cursor, setCursor] = useState<THREE.Vector3>(null);
     const projection = props.projection ?? 'perspective';
 
     useEffect(() => {
@@ -123,6 +125,24 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         scene.add(newGraph);
         setGraph(newGraph);
     }, [scene]);
+
+    useEffect(() => {
+        if (!cursor) {
+            return;
+        }
+
+        const minZ = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
+        const maxZ = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
+        const deltaZ = maxZ - minZ;
+        
+        if (props.onCursor) {
+            props.onCursor({
+                x: cursor.x * props.data.getWidth() / 2,
+                y: cursor.z * deltaZ / 2,
+                z: cursor.y * props.data.getHeight() / 2,
+            });
+        }
+    }, [cursor, props.data]);
 
     useEffect(() => {
         const normalize = (val: number, min: number, max: number) => (val - min) / (max - min);
@@ -310,6 +330,40 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             }
         }
     }, [canvasRef, renderer, camera]);
+
+    useEffect(() => {
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Points.threshold = 0.01;
+        raycaster.params.Line.threshold = 0.01;
+        let lastDebounce = Date.now();
+        const onMouse = function (this: Window, ev: MouseEvent): any {
+            if (!canvasRef || !canvasRef.current) {
+                return;
+            }
+            
+            if (Date.now() - lastDebounce < 500) {
+                return;
+            }
+            lastDebounce = Date.now();
+
+            const canvas = canvasRef.current;
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = ev.clientX - rect.left;
+            const canvasY = ev.clientY - rect.top;
+            const x = ((canvasX / rect.width) - 0.5) * 2;
+            const y = ((canvasY / rect.height) - 0.5) * -2;
+            raycaster.setFromCamera({x, y}, camera);
+            const intersected = raycaster.intersectObjects(graph.children);
+            if (intersected.length) {
+                const closestIntersected = intersected[0];
+                setCursor(closestIntersected.point);
+            }
+        };
+        window.addEventListener<'mousemove'>('mousemove', onMouse);
+        return () => {
+            window.removeEventListener<'mousemove'>('mousemove', onMouse);
+        };
+    }, [canvasRef, camera, graph]);
 
     return <canvas
         ref={canvasRef}
