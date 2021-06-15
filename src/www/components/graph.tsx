@@ -13,15 +13,17 @@ type Props = {
     showLocalExtremum?: boolean;
     showGlobalExtremum?: boolean;
     showContours?: boolean;
+    projection?: 'perspective' | 'orthographic';
 };
 
 const Graph: React.FunctionComponent<Props> = (props: Props) => {
     const canvasRef = useRef(null);
     const [renderer, setRenderer] = useState<THREE.WebGLRenderer>(null);
-    const [camera, setCamera] = useState<THREE.PerspectiveCamera>(null);
+    const [camera, setCamera] = useState<THREE.Camera>(null);
     const [scene, setScene] = useState<THREE.Scene>(null);
     const [controls, setControls] = useState<OrbitControls>(null);
     const [graph, setGraph] = useState<THREE.Object3D>(null);
+    const projection = props.projection ?? 'perspective';
 
     useEffect(() => {
         if (!canvasRef || !canvasRef.current) {
@@ -50,12 +52,28 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
 
         const canvas = canvasRef.current;
         const { width, height } = canvas.getBoundingClientRect();
-        const newCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        let newCamera: THREE.Camera = null;
+        const aspect = width / height;
+        switch (projection) {
+            case 'perspective': {
+                newCamera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+                break;
+            }
+            case 'orthographic': {
+                const w = width > height ? 1 : aspect;
+                const h = width > height ? aspect : 1;
+                newCamera = new THREE.OrthographicCamera(-w, w, h, -h, 0.1, 1000);
+                break;
+            }
+        }
+        if (!newCamera) {
+            return;
+        }
         setCamera(newCamera);
         newCamera.position.z = 2;
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height, false);
-    }, [canvasRef, scene, renderer]);
+    }, [canvasRef, scene, renderer, projection]);
 
     useEffect(() => {
         if (!scene) {
@@ -270,9 +288,26 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         const { width, height } = canvas.getBoundingClientRect();
         renderer.setSize(width, height, false);
         const newAspect = width / height;
-        if (newAspect !== camera.aspect) {
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
+        switch (projection) {
+            case 'perspective': {
+                const perspectiveCamera = camera as THREE.PerspectiveCamera;
+                if (newAspect !== perspectiveCamera.aspect) {
+                    perspectiveCamera.aspect = width / height;
+                    perspectiveCamera.updateProjectionMatrix();
+                }
+                break;
+            }
+            case 'orthographic': {
+                const orthographicCamera = camera as THREE.OrthographicCamera;
+                const w = width > height ? 1 : newAspect;
+                const h = width > height ? newAspect : 1;
+                orthographicCamera.left = -w;
+                orthographicCamera.right = w;
+                orthographicCamera.top = h;
+                orthographicCamera.bottom = -h;
+                orthographicCamera.updateProjectionMatrix();
+                break;
+            }
         }
     }, [canvasRef, renderer, camera]);
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import Graph from '../components/graph';
 import Button from '../components/button';
+import Switch from '../components/switch';
 import Toggle from '../components/toggle';
 import RangeSelect from '../components/rangeSelect';
 import Matrix from '../../matrix';
@@ -24,6 +25,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
     const [frequencyRangeMin, setFrequencyRangeMin] = useState<number>(NaN);
     const [frequencyRangeMax, setFrequencyRangeMax] = useState<number>(NaN);
     const [selectedFrequency, setSelectedFrequency] = useState<number>(NaN);
+    const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
 
     const data = (() => {
         const minFreq = isNaN(frequencyRangeMin) ? props.frequencies[0] : frequencyRangeMin;
@@ -77,6 +79,13 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 value={showContours}
                 onChange={(newVal) => setShowContours(newVal)}
             />
+            <Switch
+                label="Projection"
+                offValue="perspective"
+                onValue="orthographic"
+                value={projection}
+                onChange={(newVal: 'perspective' | 'orthographic') => setProjection(newVal)}
+            />
             {props.frequencies.length > 0 && <div className="formElement frequenciesRange">
                 <label className="label">Frequencies</label>
                 <RangeSelect
@@ -107,6 +116,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                     showLocalExtremum={showLocalExtremum}
                     showGlobalExtremum={showGlobalExtremum}
                     showContours={showContours}
+                    projection={projection}
                 />
             ) : (
                 <Line
