@@ -28,8 +28,9 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
     const [selectedFrequency, setSelectedFrequency] = useState<number>(NaN);
     const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
     const [cursor, setCursor] = useState<{x: number, y: number, z: number}>(null);
+    const [data, setData] = useState<Matrix>(null);
 
-    const data = (() => {
+    useEffect(() => {
         const minFreq = isNaN(frequencyRangeMin) ? props.frequencies[0] : frequencyRangeMin;
         const maxFreq = isNaN(frequencyRangeMax) ? props.frequencies[props.frequencies.length - 1] : frequencyRangeMax;
         let indexMin = props.frequencies.findIndex(freq => freq >= minFreq);
@@ -42,15 +43,23 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
         }
         indexMax = Math.max(props.frequencies.length-1 - indexMax, 0);
 
-        switch (corspecType) {
-            case 'Φ':
-                return new Matrix(dataAsΦ.toMultiDimensionalArray().map(amplitudes => amplitudes.slice(indexMin, indexMax + 1)));
-            case 'Ψ':
-                return new Matrix(dataAsΨ.toMultiDimensionalArray().map(amplitudes => amplitudes.slice(indexMin, indexMax + 1)));
-        }
-    })();
+        const dataSource: Matrix = (()=>{
+            switch (corspecType) {
+                case 'Φ':
+                    return dataAsΦ;
+                case 'Ψ':
+                    return dataAsΨ;
+            }
+        })();
+
+        setData(new Matrix(dataSource.toMultiDimensionalArray().map(amplitudes => amplitudes.slice(indexMin, indexMax + 1))));
+    }, [corspecType, frequencyRangeMin, frequencyRangeMax, props.frequencies, dataAsΦ, dataAsΨ]);
 
     const [globalExtremums, localExtremums] = (() => {
+        if (!data) {
+            return [[], []];
+        }
+
         const maxVal = data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
         const minVal = data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
         const globals: {x: number, y: number, z: number}[] = [];
