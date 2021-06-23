@@ -55,21 +55,28 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
         setData(new Matrix(dataSource.toMultiDimensionalArray().map(amplitudes => amplitudes.slice(indexMin, indexMax + 1))));
     }, [corspecType, frequencyRangeMin, frequencyRangeMax, props.frequencies, dataAsΦ, dataAsΨ]);
 
-    const [globalExtremums, localExtremums] = (() => {
+    const [globalMaximums, globalMinimums, localExtremums] = (() => {
         if (!data) {
-            return [[], []];
+            return [[], [], []];
         }
 
         const maxVal = data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
         const minVal = data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
-        const globals: {x: number, y: number, z: number}[] = [];
+        const gMax: {x: number, y: number, z: number}[] = [];
+        const gMin: {x: number, y: number, z: number}[] = [];
         const locals: {x: number, y: number, z: number}[] = [];
         data.forEach((val, [x, y]) => {
-            if (val === maxVal || val === minVal) {
-                globals.push({x, y, z: val});
+            // Global extremums
+            if (val === maxVal) {
+                gMax.push({x, y, z: val});
+                return;
+            }
+            if (val === minVal) {
+                gMin.push({x, y, z: val});
                 return;
             }
             
+            // Local extremums
             const neighborIndexes = data.cardinalNeighborIndexesOf(x, y);
             const neighborVals = neighborIndexes.map(([nx, ny]) => data.getAt(nx, ny));
             const maxNeighborVal = neighborVals.reduce((max, cur) => cur > max ? cur : max, -Infinity);
@@ -78,7 +85,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 locals.push({x, y, z: val});
             }
         });
-        return [globals, locals];
+        return [gMax, gMin, locals];
     })();
 
     useEffect(() => {
@@ -103,7 +110,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 onChange={(newVal) => setShowLocalExtremum(newVal)}
             />
             <List
-                values={localExtremums}
+                values={(localExtremums)}
                 onRenderItem={coords => <React.Fragment>
                     x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
                 </React.Fragment>}
@@ -114,7 +121,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 onChange={(newVal) => setShowGlobalExtremum(newVal)}
             />
             <List
-                values={globalExtremums}
+                values={[...globalMaximums, ...globalMinimums]}
                 onRenderItem={coords => <React.Fragment>
                     x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
                 </React.Fragment>}
@@ -165,10 +172,22 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
             {isNaN(selectedFrequency) ? (
                 <Graph
                     data={data}
-                    showLocalExtremum={showLocalExtremum}
-                    showGlobalExtremum={showGlobalExtremum}
                     showContours={showContours}
                     projection={projection}
+                    highlightedPoints={[
+                        ...(showGlobalExtremum ? globalMinimums.map(coordinates => ({
+                            coordinates,
+                            color: 0xff0000,
+                        })) : []),
+                        ...(showGlobalExtremum ? globalMaximums.map(coordinates => ({
+                            coordinates,
+                            color: 0x00ff00,
+                        })) : []),
+                        ...(showLocalExtremum ? [...localExtremums, ...(!showGlobalExtremum ? [...globalMinimums, ...globalMaximums] : [])].map(coordinates => ({
+                            coordinates,
+                            color: 0x0000ff,
+                        })) : []),
+                    ]}
                     onCursor={c => setCursor(c)}
                 />
             ) : (

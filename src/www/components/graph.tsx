@@ -10,8 +10,10 @@ type Props = {
     height?: string;
     data: Matrix;
     style?: any;
-    showLocalExtremum?: boolean;
-    showGlobalExtremum?: boolean;
+    highlightedPoints?: {
+        coordinates: {x: number, y: number},
+        color: number,
+    }[],
     showContours?: boolean;
     projection?: 'perspective' | 'orthographic';
     onCursor?: (coordinates: {x: number, y: number, z: number}) => void;
@@ -234,50 +236,30 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             });
         };
 
-        const renderExtremums = () => {
-            if (props.showLocalExtremum || props.showGlobalExtremum) {
-                const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
-                const cubeExtremumMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
-                const cubeMaxMaterial      = new THREE.MeshBasicMaterial({color: 0x00ff00});
-                const cubeMinMaterial      = new THREE.MeshBasicMaterial({color: 0xff0000});
+        const renderHighlightedPoints = () => {
+            if (!props.highlightedPoints || !props.data) {
+                return;
+            }
+
+            props.highlightedPoints.forEach(highlightPoint => {
+                const {x, y} = highlightPoint.coordinates;
+                if (x < 0 || x >= props.data.getWidth() || y < 0 || y >= props.data.getHeight()) {
+                    return;
+                }
+
                 const maxVal = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
                 const minVal = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
-                const cubes: THREE.Mesh[] = [];
-                const makeCubeMesh = (x: number, y: number, mat: THREE.Material) => {
-                    const cubeMesh = new THREE.Mesh(cubeGeometry, mat);
-                    const vertex = makeVertex(x, y, minVal, maxVal);
-                    cubeMesh.position.x = vertex[0];
-                    cubeMesh.position.y = vertex[1];
-                    cubeMesh.position.z = vertex[2];
-                    cubeMesh.rotateY(Math.PI / 4);
-                    cubeMesh.rotateX(Math.PI / 4);
-                    return cubeMesh;
-                };
-                props.data.forEach((val, [x, y]) => {
-                    if (props.showGlobalExtremum) {
-                        if (val === maxVal) {
-                            cubes.push(makeCubeMesh(x, y, cubeMaxMaterial));
-                            return;
-                        }
-                        if (val === minVal) {
-                            cubes.push(makeCubeMesh(x, y, cubeMinMaterial));
-                            return;
-                        }
-                    }
-                    if (props.showLocalExtremum) {
-                        const neighborIndexes = props.data.cardinalNeighborIndexesOf(x, y);
-                        const neighborVals = neighborIndexes.map(([nx, ny]) => props.data.getAt(nx, ny));
-                        const maxNeighborVal = neighborVals.reduce((max, cur) => cur > max ? cur : max, -Infinity);
-                        const minNeighborVal = neighborVals.reduce((min, cur) => cur < min ? cur : min,  Infinity);
-                        if (val > maxNeighborVal || val < minNeighborVal) {
-                            cubes.push(makeCubeMesh(x, y, cubeExtremumMaterial));
-                        }
-                    }
-                });
-                cubes.forEach(cube => {
-                    graph.add(cube);
-                });
-            }
+                const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
+                const material = new THREE.MeshBasicMaterial({color: highlightPoint.color});
+                const mesh = new THREE.Mesh(cubeGeometry, material);
+                const vertex = makeVertex(x, y, minVal, maxVal);
+                mesh.position.x = vertex[0];
+                mesh.position.y = vertex[1];
+                mesh.position.z = vertex[2];
+                mesh.rotateY(Math.PI / 4);
+                mesh.rotateX(Math.PI / 4);
+                graph.add(mesh);
+            });
         };
 
         if (!graph) {
@@ -287,8 +269,8 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         graph.clear();
         renderShape();
         renderContours();
-        renderExtremums();
-    }, [graph, props.data, props.showLocalExtremum, props.showGlobalExtremum, props.showContours]);
+        renderHighlightedPoints();
+    }, [graph, props.data, props.showContours, props.highlightedPoints]);
 
     const onResize = (callback: () => void, params: any[]) => {
         useLayoutEffect(() => {
