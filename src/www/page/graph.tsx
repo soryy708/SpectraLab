@@ -110,7 +110,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 onChange={(newVal) => setShowLocalExtremum(newVal)}
             />
             <List
-                values={(localExtremums)}
+                values={localExtremums}
                 onRenderItem={coords => <React.Fragment>
                     x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
                 </React.Fragment>}
