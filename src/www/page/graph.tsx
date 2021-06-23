@@ -29,6 +29,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
     const [projection, setProjection] = useState<'perspective' | 'orthographic'>('perspective');
     const [cursor, setCursor] = useState<{x: number, y: number, z: number}>(null);
     const [data, setData] = useState<Matrix>(null);
+    const [hoveredExtremum, setHoveredExtremum] = useState<{x: number, y: number}>(null);
 
     useEffect(() => {
         const minFreq = isNaN(frequencyRangeMin) ? props.frequencies[0] : frequencyRangeMin;
@@ -114,6 +115,8 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 onRenderItem={coords => <React.Fragment>
                     x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
                 </React.Fragment>}
+                onValueHover={value => setHoveredExtremum(value)}
+                onValueHoverOut={() => setHoveredExtremum(null)}
             />
             <Toggle
                 label="Show global extremum?"
@@ -125,6 +128,8 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                 onRenderItem={coords => <React.Fragment>
                     x={coords.x.toFixed(1)} y={coords.y.toFixed(1)} z={coords.z.toFixed(1)}
                 </React.Fragment>}
+                onValueHover={value => setHoveredExtremum(value)}
+                onValueHoverOut={() => setHoveredExtremum(null)}
             />
             <Toggle
                 label="Show contours?"
@@ -187,6 +192,11 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                             coordinates,
                             color: 0x0000ff,
                         })) : []),
+                        hoveredExtremum && {
+                            coordinates: hoveredExtremum,
+                            color: 0xffff00,
+                            size: 0.05,
+                        },
                     ]}
                     onCursor={c => setCursor(c)}
                 />

@@ -13,6 +13,7 @@ type Props = {
     highlightedPoints?: {
         coordinates: {x: number, y: number},
         color: number,
+        size?: number,
     }[],
     showContours?: boolean;
     projection?: 'perspective' | 'orthographic';
@@ -242,14 +243,20 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
             }
 
             props.highlightedPoints.forEach(highlightPoint => {
+                if (!highlightPoint) {
+                    return;
+                }
+
                 const {x, y} = highlightPoint.coordinates;
                 if (x < 0 || x >= props.data.getWidth() || y < 0 || y >= props.data.getHeight()) {
                     return;
                 }
 
+                const size = highlightPoint.size ?? 0.025;
+
                 const maxVal = props.data.toArray().reduce((max, cur) => cur > max ? cur : max, -Infinity);
                 const minVal = props.data.toArray().reduce((min, cur) => cur < min ? cur : min,  Infinity);
-                const cubeGeometry = new THREE.BoxGeometry(0.025, 0.025, 0.025);
+                const cubeGeometry = new THREE.BoxGeometry(size, size, size);
                 const material = new THREE.MeshBasicMaterial({color: highlightPoint.color});
                 const mesh = new THREE.Mesh(cubeGeometry, material);
                 const vertex = makeVertex(x, y, minVal, maxVal);
