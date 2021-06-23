@@ -322,8 +322,8 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
 
     useEffect(() => {
         const raycaster = new THREE.Raycaster();
-        raycaster.params.Points.threshold = 0.01;
-        raycaster.params.Line.threshold = 0.01;
+        raycaster.params.Points.threshold = 0.001;
+        raycaster.params.Line.threshold = 0.001;
         let lastDebounce = Date.now();
         const onMouse = function (this: Window, ev: MouseEvent): any {
             if (!canvasRef || !canvasRef.current) {
