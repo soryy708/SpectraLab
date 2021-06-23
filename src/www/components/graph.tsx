@@ -140,9 +140,9 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
         
         if (props.onCursor) {
             props.onCursor({
-                x: cursor.x * props.data.getWidth() / 2,
-                y: cursor.z * deltaZ / 2,
-                z: cursor.y * props.data.getHeight() / 2,
+                x: (cursor.x+0.5) * props.data.getWidth(),
+                z: cursor.y * deltaZ,
+                y: (cursor.z+0.5) * props.data.getHeight(),
             });
         }
     }, [cursor, props.data]);
