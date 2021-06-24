@@ -153,6 +153,11 @@ input[type="checkbox"] {
     padding: 0.25em 0.5em;
 }
 
+.list {
+    max-height: 5em;
+    overflow: auto;
+}
+
 .list label {
     font-size: 0.75em;
     color: #888;
