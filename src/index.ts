@@ -16,7 +16,6 @@ function createWindow() {
 
     window.setMenu(null);
     window.loadFile('www/index.html');
-    window.webContents.openDevTools();
 
     window.on('closed', () => {
         window = null;
