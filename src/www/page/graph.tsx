@@ -205,7 +205,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                     className="lineChart"
                     type="line"
                     data={{
-                        labels: [...Array(props.data.getHeight()).keys()],
+                        labels: [...Array(data ? data.getHeight() : 0).keys()],
                         datasets: [{
                             label: selectedFrequency,
                             fill: false,
