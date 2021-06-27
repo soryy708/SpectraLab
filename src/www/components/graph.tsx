@@ -148,7 +148,7 @@ const Graph: React.FunctionComponent<Props> = (props: Props) => {
     }, [cursor, props.data]);
 
     useEffect(() => {
-        const normalize = (val: number, min: number, max: number) => (val - min) / (max - min);
+        const normalize = (val: number, min: number, max: number) => (val - min) / ((max !== min) ? (max - min) : 1);
     
         const makeVertex = (x: number, y: number, minZ: number, maxZ: number) => {
             const z = props.data.getAt(x, y);
