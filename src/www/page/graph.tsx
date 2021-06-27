@@ -216,12 +216,7 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                                 if (index === -1) {
                                     return [];
                                 }
-                                switch (corspecType) {
-                                    case 'Φ':
-                                        return dataAsΦ.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
-                                    case 'Ψ':
-                                        return dataAsΨ.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
-                                }
+                                return data.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
                             })()
                         }],
                     }}
