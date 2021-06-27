@@ -200,7 +200,8 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                     ]}
                     onCursor={c => setCursor(c)}
                 />
-            ) : (
+            ) : (<React.Fragment>
+                <p>Correlation:</p>
                 <Line
                     className="lineChart"
                     type="line"
@@ -221,7 +222,28 @@ const GraphPage: React.FunctionComponent<GraphPageProps> = (props: GraphPageProp
                         }],
                     }}
                 />
-            )}
+                <p>Source:</p>
+                <Line
+                    className="lineChart"
+                    type="line"
+                    data={{
+                        labels: [...Array(props.data ? props.data.getHeight() : 0).keys()],
+                        datasets: [{
+                            label: selectedFrequency,
+                            fill: false,
+                            borderColor: '#000',
+                            tension: 0.1,
+                            data: (()=>{
+                                const index = props.frequencies.findIndex(freq => freq === selectedFrequency);
+                                if (index === -1) {
+                                    return [];
+                                }
+                                return props.data.toMultiDimensionalArray().map(amplitudes => amplitudes[index]);
+                            })()
+                        }],
+                    }}
+                />
+            </React.Fragment>)}
 
         </div>
     </div>;
