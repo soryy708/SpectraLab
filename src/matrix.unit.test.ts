@@ -199,7 +199,7 @@ describe('Matrix', () => {
         });
     });
 
-    describe('dotProduct', () => {
+    describe('mulMatrix', () => {
         it('Throws for 1,2 * 1,2', () => {
             const mat1 = new Matrix([
                 [0, 0],
@@ -208,7 +208,7 @@ describe('Matrix', () => {
                 [0, 0],
             ]);
             assert.throws(() => {
-                mat1.dotProduct(mat2);
+                mat1.mulMatrix(mat2);
             });
         });
 
@@ -222,7 +222,7 @@ describe('Matrix', () => {
                 [0],
             ]);
             assert.throws(() => {
-                mat1.dotProduct(mat2);
+                mat1.mulMatrix(mat2);
             });
         });
 
@@ -236,7 +236,7 @@ describe('Matrix', () => {
                 [0, 0, 0],
             ]);
             assert.throws(() => {
-                mat1.dotProduct(mat2);
+                mat1.mulMatrix(mat2);
             });
         });
 
@@ -254,7 +254,7 @@ describe('Matrix', () => {
                 [58, 64],
                 [139, 154],
             ]);
-            const actual = mat1.dotProduct(mat2);
+            const actual = mat1.mulMatrix(mat2);
             assert.strictEqual(actual.getWidth(), expected.getWidth());
             assert.strictEqual(actual.getHeight(), expected.getHeight());
             for (let i = 0; i < actual.getHeight(); ++i) {

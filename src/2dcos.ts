@@ -22,7 +22,7 @@ function synchronous(matrix: Matrix): Matrix {
         for (let j = 0; j < width; ++j) {
             const yTilda1 = matrix.getColumn(i);
             const yTilda2 = matrix.getColumn(j).transpose();
-            const phi = 1/height * yTilda1.dotProduct(yTilda2).getAt(0, 0);
+            const phi = 1/height * yTilda1.dotProduct(yTilda2);
             row.push(phi);
         }
         newMatrix.push(row);
@@ -40,7 +40,7 @@ function asynchronous(matrix: Matrix): Matrix {const newMatrix: Array<Array<numb
         for (let j = 0; j < width; ++j) {
             const yTilda1 = matrix.getColumn(i);
             const yTilda2 = matrix.getColumn(j);
-            const psi = 1/height * yTilda1.dotProduct(N.dotProduct(yTilda2).transpose()).getAt(0, 0);
+            const psi = 1/height * yTilda1.dotProduct(N.mulMatrix(yTilda2).transpose());
             row.push(psi);
         }
         newMatrix.push(row);

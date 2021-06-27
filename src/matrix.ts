@@ -119,7 +119,15 @@ class MyMatrix {
         return new MyMatrix([this.data.getRow(index)]);
     }
 
-    dotProduct(other: MyMatrix): MyMatrix {
+    dotProduct(other: MyMatrix): number {
+        if (this.sizeX !== other.sizeY) {
+            throw new Error('Bad size');
+        }
+
+        return this.data.dot(other.data);
+    }
+
+    mulMatrix(other: MyMatrix): MyMatrix {
         if (this.sizeX !== other.sizeY) {
             throw new Error('Bad size');
         }
