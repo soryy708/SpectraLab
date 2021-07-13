@@ -30,7 +30,8 @@ function synchronous(matrix: Matrix): Matrix {
     return new Matrix(newMatrix);
 }
 
-function asynchronous(matrix: Matrix): Matrix {const newMatrix: Array<Array<number>> = [];
+function asynchronous(matrix: Matrix): Matrix {
+    const newMatrix: Array<Array<number>> = [];
     const height = matrix.getHeight();
     const width = matrix.getWidth();
     const N = hilbertNodaTransformationMatrix(height);
