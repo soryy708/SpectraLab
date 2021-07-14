@@ -5,14 +5,14 @@ export function hilbertNodaTransformationMatrix(size: number): Matrix {
     for (let j = 0; j < size; ++j) {
         const row: Array<number> = [];
         for (let k = 0; k < size; ++k) {
-            row.push(j === k ? 0 : (1 / (Math.PI * (k-j))));
+            row.push(j === k ? 0 : (1 / (Math.PI * (k - j))));
         }
         data.push(row);
     }
     return new Matrix(data);
 }
 
-function synchronous(matrix: Matrix): Matrix {
+export function synchronous(matrix: Matrix): Matrix {
     const newMatrix: Array<Array<number>> = [];
     const height = matrix.getHeight();
     const width = matrix.getWidth();
@@ -22,7 +22,7 @@ function synchronous(matrix: Matrix): Matrix {
         for (let j = 0; j < width; ++j) {
             const yTilda1 = matrix.getColumn(i);
             const yTilda2 = matrix.getColumn(j).transpose();
-            const phi = 1/height * yTilda1.dotProduct(yTilda2);
+            const phi = 1 / (height - 1) * yTilda1.dotProduct(yTilda2);
             row.push(phi);
         }
         newMatrix.push(row);
@@ -41,7 +41,7 @@ function asynchronous(matrix: Matrix): Matrix {
         for (let j = 0; j < width; ++j) {
             const yTilda1 = matrix.getColumn(i);
             const yTilda2 = matrix.getColumn(j);
-            const psi = 1/height * yTilda1.dotProduct(N.mulMatrix(yTilda2).transpose());
+            const psi = 1 / (height - 1) * yTilda1.dotProduct(N.mulMatrix(yTilda2).transpose());
             row.push(psi);
         }
         newMatrix.push(row);
